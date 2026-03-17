@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -10,23 +11,37 @@ import re
 import os
 
 class DataExtractor:
-    def __init__(self, headless=False):
-        self.driver = webdriver.Chrome()
-        self.driver.maximize_window()
-        self.wait = WebDriverWait(self.driver, 20)
-        
-        self.data_post = {}
-        self.data_comments = []
-        self.p_details_list = []
+    def __init__(self, headless=True):
+        chrome_options = Options()
+        if headless:
+            chrome_options.add_argument("--headless")
+            chrome_options.add_argument("--disable-gpu")
+            chrome_options.add_argument("--no-sandbox")
+            chrome_options.add_argument("--window-size=1920,1080")
 
-    def get_num(self, text):
+        self.driver = webdriver.Chrome(options=chrome_options)
+        
+        if not headless:
+            self.driver.maximize_window()
+
+        self.wait = WebDriverWait(self.driver, 20)
+
+    # Context Manager methods for safe resource teardown
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print('Closing browser safely...')
+        self.driver.quit()
+
+    def _get_num(self, text):
         '''
         Helper function to extract digits
         '''
         match = re.search(r'\d+', text.replace(',','').replace('.',''))
         return int(match.group()) if match else 0
 
-    def get_position(self, soup):
+    def _get_position(self, soup):
         '''
         Helper function to extract job title
         FIXME: Needs more robust solution for nested role detection 
@@ -56,19 +71,27 @@ class DataExtractor:
             target_span = main_container.select_one('span[aria-hidden="true"]')
             return target_span.get_text(strip=True) if target_span else None
 
-    def scrape_post(self, post_url):
+    def scrape_post(self, post_url, li_at_cookie):
         '''
         Scrape the static HTML of the post
         '''
-         # Access the page
+        if not li_at_cookie:
+            raise ValueError("li_at_cookie is required to bypass login.")
+        
+        # Set up authentication via Cookie
+        print("Setting up authentication via Cookie...")
+        self.driver.get('https://www.linkedin.com/robots.txt')
+        self.driver.add_cookie({
+            'name': 'li_at',
+            'value': li_at_cookie,
+            'domain': '.linkedin.com',
+            'path': '/',
+            'secure': True
+        })
+
+        # Access the page
         print("Navigating to URL...")
         self.driver.get(post_url)
-
-        # Manual Login
-        print("\n--- ACTION REQUIRED ---") 
-        print("Please log in manually in the opened browser window.")
-        print("Once the post is fully visible, press ENTER in this terminal to continue...")
-        input() 
 
         try:
             # Wait for the main post container to ensure content is loaded
@@ -81,40 +104,44 @@ class DataExtractor:
             # Retrieve static HTML source
             page_source = self.driver.page_source
             print("HTML retrieved successfully.")
-            self.parse_post(page_source)
+
+            data_post, data_comments = self._parse_post(page_source)
+            time.sleep(random.randint(2,5))
+            return data_post, data_comments
 
         except Exception as e:
             print(f'Failed retrieving HTML. Error code: {e}')
-        
-        
-        time.sleep(random.randint(2,5))
+            raise e
     
-    def parse_post(self, page_source):
+    def _parse_post(self, page_source):
         '''
-        Parse the post
+        Parse the post and return the extracted dictionaries
         '''
         soup = BeautifulSoup(page_source, 'html.parser')
+
+        data_post = {}
+        data_comments = []
 
         # 1. Inspect the post section
         # 1.1. Extract Post Text
         text_div = soup.find('div', class_='update-components-text')
-        self.data_post['post_text'] = text_div.get_text(separator='\n', strip=True) if text_div else None
+        data_post['post_text'] = text_div.get_text(separator='\n', strip=True) if text_div else None
 
         # 1.2. Extract Author/Company Name
         author_span = soup.select_one('span[class=actor__title] span[aria-hidden="true"]')
-        self.data_post['post_author'] = author_span.get_text(strip=True) if author_span else None
+        data_post['post_author'] = author_span.get_text(strip=True) if author_span else None
 
         # 1.4. Extract Likes, Comments, and Reposts Stats
         stat_lists = soup.find_all('li', class_=re.compile(r'social-details-social-counts'))
 
         if len(stat_lists) >= 1:
-            self.data_post['post_likes'] = self.get_num(stat_lists[0].get_text(strip=True))
+            data_post['post_likes'] = self._get_num(stat_lists[0].get_text(strip=True))
 
         if len(stat_lists) >= 2:
-            self.data_post['post_comments'] = self.get_num(stat_lists[1].get_text(strip=True))
+            data_post['post_comments'] = self._get_num(stat_lists[1].get_text(strip=True))
 
         if len(stat_lists) >= 3:
-            self.data_post['post_reposts'] = self.get_num(stat_lists[2].get_text(strip=True))
+            data_post['post_reposts'] = self._get_num(stat_lists[2].get_text(strip=True))
 
         # 2. Inspect the comment section
         # Find all comment containers. 
@@ -131,7 +158,7 @@ class DataExtractor:
 
             # 2.2 Extract Comment Likes
             like_btn = comment.select_one('button[class*="reactions-count"]')
-            comment_data['likes'] = self.get_num(like_btn.get_text(strip=True)) if like_btn else 0
+            comment_data['likes'] = self._get_num(like_btn.get_text(strip=True)) if like_btn else 0
 
             # 2.3 Extract Commenter Name
             name_span = comment.select_one('span[class*="description"][class*="meta"]')
@@ -151,22 +178,24 @@ class DataExtractor:
 
             # Only append if we found at least some text or an author
             if comment_data['text'] or comment_data['commenter_name']:
-                self.data_comments.append(comment_data)
+                data_comments.append(comment_data)
 
+        return data_post, data_comments
 
-
-    def scrape_profiles(self):
+    def scrape_profiles(self, data_comments):
         '''
         Scrape commenter profiles
         '''
-        if not self.data_comments:
+        if not data_comments:
             print('No comments extracted. Skipping profile scraping.')
-            return
+            return []
         
+        p_details_list = []
+
         # Deduplicate URLs while preserving account type
         profiles_to_scrape = {
             c['commenter_url']: c['account_type'] 
-            for c in self.data_comments 
+            for c in data_comments 
             if c.get('commenter_url') and c.get('account_type')
         }
 
@@ -202,7 +231,7 @@ class DataExtractor:
 
                         # 1.3. Followers
                         followers_p = p_soup.select_one('section[class*="company-info"] p')
-                        p_details['followers'] = self.get_num(followers_p.get_text(strip=True)) if followers_p else None
+                        p_details['followers'] = self._get_num(followers_p.get_text(strip=True)) if followers_p else None
                             
                         # 1.4. Size
                         size_span = p_soup.select_one('a[class*="summary-info"][class*="item"]')
@@ -216,7 +245,7 @@ class DataExtractor:
                         
                         # 2.2. Followers
                         followers_span = p_soup.select_one('#content_collections + div p span[aria-hidden="true"]')
-                        p_details['followers'] = self.get_num(followers_span.get_text(strip=True)) if followers_span else None
+                        p_details['followers'] = self._get_num(followers_span.get_text(strip=True)) if followers_span else None
 
                         # 2.3. Location
                         location_selector = 'ul:has(button[class*="text-align-left"]) + div span:nth-of-type(1)'
@@ -224,29 +253,31 @@ class DataExtractor:
                         p_details['location'] = location_span.get_text().split(',')[-1].strip() if location_span else None
 
                         # 2.4. Posiiton
-                        p_details['position'] = self.get_position(p_soup)
+                        p_details['position'] = self._get_position(p_soup)
 
-                    self.p_details_list.append(p_details)
+                    p_details_list.append(p_details)
 
                 except Exception as e:
                     print(f"Error when parsing profile {url} \n Error code: {e}")
-                    self.p_details_list.append(p_details)
+                    p_details_list.append(p_details)
 
             except Exception as e:
                 print(f"Failed to access profile {url} \n Error code: {e}")
                 
             time.sleep(random.randint(2,5))
 
-    def save_data(self, output_dir='data'):
+            return p_details_list
+
+    def save_data(self, data_post, data_comments, p_details_list, output_dir='data'):
         '''
-        Save extracted data as csv
+        Save extracted data as csv                  
         '''
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         
-        df_post = pd.DataFrame([self.data_post])
-        df_comments = pd.DataFrame(self.data_comments)
-        df_p_details = pd.DataFrame(self.p_details_list)
+        df_post = pd.DataFrame([data_post])
+        df_comments = pd.DataFrame(data_comments)
+        df_p_details = pd.DataFrame(p_details_list)
 
         if not df_comments.empty and not df_p_details.empty:
             df_comments_with_details = pd.merge(df_comments, df_p_details, on='commenter_url', how='left')
@@ -261,20 +292,12 @@ class DataExtractor:
         
         print(f"Data saved to {output_dir}/")
 
-    def close(self):
-        '''
-        Shut down the browser
-        '''
-        print('Closing browser...')
-        self.driver.quit()
-
 # ================= Testing =================
 if __name__ == "__main__":
     post_url = 'https://www.linkedin.com/posts/klarna_klarnas-climate-resilience-program-activity-7346877091532959746-748v/'
-    data_extractor = DataExtractor()
-    try:
-        data_extractor.scrape_post(post_url)
-        data_extractor.scrape_profiles()
-        data_extractor.save_data()
-    finally:
-        data_extractor.close()
+    li_at_cookie = 'AQEDAWFs13wBDiOQAAABnHA6YbEAAAGdIGq5Lk4ARStP_doi9b2FXUY4Bh_kQ-bbDn9aTSBXIALpnF46LbCzbEKR4DwgFRsY7O8jdX2OY61KjYmVSEtDzJYH4pRvHMD_zEOpkyVZ81jjCA1AXpihzZwf'
+    
+    with DataExtractor(headless=False) as extractor:
+        post_data, comments_data = extractor.scrape_post(post_url, li_at_cookie)
+        profiles_data = extractor.scrape_profiles(comments_data)
+        extractor.save_data(post_data, comments_data, profiles_data)

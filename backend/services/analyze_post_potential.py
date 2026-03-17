@@ -1,5 +1,4 @@
 from llm_interface import AihubmixClient
-import pandas as pd
 
 def analyze_post_potential(client: AihubmixClient, post_text: str, model: str = "gpt-4.1-free"):
     system_prompt = """

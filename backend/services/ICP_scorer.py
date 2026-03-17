@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from sentence_transformers import SentenceTransformer
 from sentence_transformers import util
 
@@ -91,4 +90,6 @@ class ICPScorer:
         
         # Sort by total score in descending order and save as csv
         df.sort_values(by='icp_match_score', ascending=False).to_csv('data/comments_with_scores.csv', index=False)
-        print("Complete!")
+        print("CSV successfully exported!")
+
+        return df['icp_match_score'].mean()
