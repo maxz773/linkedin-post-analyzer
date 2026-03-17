@@ -1,0 +1,93 @@
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+h1, h2 { color: #0077b5; } /* 借用一点 LinkedIn 的主色调 */
+
+.section { margin-bottom: 25px; }
+
+.forms-wrapper {
+    display: flex;
+    gap: 20px;
+}
+
+.card {
+    flex: 1;
+    padding: 20px;
+    background: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+input[type="url"], input[type="file"], textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #0077b5;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 100%;
+    font-size: 16px;
+}
+
+button:hover { background-color: #005582; }
+
+.hidden { display: none !important; }
+
+#loading {
+    text-align: center;
+    font-weight: bold;
+    color: #e68a00;
+    margin: 20px 0;
+}
+
+.scores {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.score-box {
+    background: #eef3f8;
+    padding: 15px;
+    border-radius: 6px;
+    flex: 1;
+    text-align: center;
+    font-size: 18px;
+}
+
+.advice-box {
+    background: #fff8e1;
+    padding: 15px;
+    border-left: 4px solid #ffc107;
+    border-radius: 4px;
+}

@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.concurrency import run_in_threadpool
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import json
 import os
@@ -23,6 +24,17 @@ def create_app() -> FastAPI:
    print("Initialization complete.")
 
    app = FastAPI(title="LinkedIn Post Analyzer API")
+
+   # ==========================================
+   # CORS Configurations
+   # ==========================================
+   app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],  # Allow all frontend sources
+        allow_credentials=True,
+        allow_methods=["*"],  # Allow all methods (POST, GET, etc.)
+        allow_headers=["*"],  # Allow all Headers
+   )
 
    # ==========================================
    # Helper functions: Synchronous scraper and core analysis flow

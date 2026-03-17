@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Post Analyzer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>LinkedIn Post Analyzer</h1>
+
+        <div class="section">
+            <label for="icp">Reference ICP (Ideal Customer Profile):</label>
+            <textarea id="icp" rows="3">Director, Chief, or Lead decision maker in Sustainability, AI, Software, or Technology.</textarea>
+        </div>
+
+        <div class="forms-wrapper">
+            <div class="section card">
+                <h2>Mode 1: Analyze by URL</h2>
+                <label for="post_url">LinkedIn Post URL:</label>
+                <input type="url" id="post_url" placeholder="https://www.linkedin.com/posts/...">
+                <button onclick="analyzeUrl()">Analyze URL</button>
+            </div>
+
+            <div class="section card">
+                <h2>Mode 2: Analyze by Files</h2>
+                <label for="post_file">Post Data (CSV):</label>
+                <input type="file" id="post_file" accept=".csv">
+                
+                <label for="comments_file">Comments Data (CSV):</label>
+                <input type="file" id="comments_file" accept=".csv">
+                
+                <button onclick="analyzeFiles()">Analyze Files</button>
+            </div>
+        </div>
+
+        <div id="loading" class="hidden">Processing... This might take a while.</div>
+        
+        <div id="result-section" class="section hidden">
+            <h2>Analysis Results</h2>
+            <div class="scores">
+                <div class="score-box"><strong>Post Score:</strong> <span id="res_post"></span>/10</div>
+                <div class="score-box"><strong>Comment Score:</strong> <span id="res_comment"></span>/10</div>
+                <div class="score-box"><strong>ICP Score:</strong> <span id="res_icp"></span>/10</div>
+            </div>
+            <div class="advice-box">
+                <strong>Advice:</strong>
+                <p id="res_advice"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
