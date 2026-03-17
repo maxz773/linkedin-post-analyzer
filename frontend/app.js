@@ -56,7 +56,7 @@ async function analyzeFiles() {
     try {
         const response = await fetch(`${API_BASE_URL}/api/analyze/files`, {
             method: 'POST',
-            body: formData // Fetch 自动设置 multipart/form-data 头
+            body: formData // Fetch automatically sets head: multipart/form-data
         });
         
         if (!response.ok) throw new Error(await response.text());
