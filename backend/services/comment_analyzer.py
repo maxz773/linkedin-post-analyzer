@@ -37,7 +37,7 @@ class CommentAnalyzer:
             "sentiment-analysis", 
             model=model_name, 
             device=-1
-        )
+        )   # type: ignore
         return self._pipelines[model_name]
     
     def analyze(self, comments: list[str], model: str = None) -> float | list[dict]:

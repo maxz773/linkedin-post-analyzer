@@ -1,6 +1,6 @@
 from llm_interface import AihubmixClient
 
-def analyze_post_potential(client: AihubmixClient, post_text: str, model: str = "gpt-4.1-free"):
+def analyze_post_potential(client: AihubmixClient, post_text: str, model: str = "gpt-5-nano"):
     system_prompt = """
     You are a top-tier LinkedIn Growth Hacker and Copywriting Expert. Your mission is to evaluate the "Virality Potential" of a given LinkedIn post text.
     Please assess the post based on the following dimensions:
