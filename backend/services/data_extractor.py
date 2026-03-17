@@ -71,26 +71,24 @@ class DataExtractor:
             target_span = main_container.select_one('span[aria-hidden="true"]')
             return target_span.get_text(strip=True) if target_span else None
 
-    def scrape_post(self, post_url, li_at_cookie):
+    def scrape_post(self, post_url):
         '''
         Scrape the static HTML of the post
         '''
-        if not li_at_cookie:
-            raise ValueError("li_at_cookie is required to bypass login.")
         
-        # Set up authentication via Cookie
-        print("Setting up authentication via Cookie...")
-        self.driver.get('https://www.linkedin.com/robots.txt')
-        self.driver.add_cookie({
-            'name': 'li_at',
-            'value': li_at_cookie,
-            'domain': '.linkedin.com',
-            'path': '/',
-            'secure': True
-        })
-
         # Access the page
         print("Navigating to URL...")
+        self.driver.get(post_url)
+
+        # Manual Login
+        print("\n--- ACTION REQUIRED ---")
+        print("Please log in manually in the opened browser window.")
+        print("Once the post is fully visible, press ENTER in this terminal to continue...")
+        input()
+
+        # Ensure the browser is at the target page
+        print("Re-navigating to the target post after login...")
+        
         self.driver.get(post_url)
 
         try:
@@ -266,7 +264,7 @@ class DataExtractor:
                 
             time.sleep(random.randint(2,5))
 
-            return p_details_list
+        return p_details_list
 
     def save_data(self, data_post, data_comments, p_details_list, output_dir='data'):
         '''
@@ -295,9 +293,8 @@ class DataExtractor:
 # ================= Testing =================
 if __name__ == "__main__":
     post_url = 'https://www.linkedin.com/posts/klarna_klarnas-climate-resilience-program-activity-7346877091532959746-748v/'
-    li_at_cookie = 'AQEDAWFs13wBDiOQAAABnHA6YbEAAAGdIGq5Lk4ARStP_doi9b2FXUY4Bh_kQ-bbDn9aTSBXIALpnF46LbCzbEKR4DwgFRsY7O8jdX2OY61KjYmVSEtDzJYH4pRvHMD_zEOpkyVZ81jjCA1AXpihzZwf'
     
     with DataExtractor(headless=False) as extractor:
-        post_data, comments_data = extractor.scrape_post(post_url, li_at_cookie)
+        post_data, comments_data = extractor.scrape_post(post_url)
         profiles_data = extractor.scrape_profiles(comments_data)
         extractor.save_data(post_data, comments_data, profiles_data)
