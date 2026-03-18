@@ -92,4 +92,4 @@ class ICPScorer:
         df.sort_values(by='icp_match_score', ascending=False).to_csv('data/comments_with_scores.csv', index=False)
         print("CSV successfully exported!")
 
-        return df['icp_match_score'].mean()/10
+        return df['icp_match_score'].mean()*0.09+1
