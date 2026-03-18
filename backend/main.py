@@ -56,7 +56,7 @@ def create_app() -> FastAPI:
             raise ValueError("Could not retrieve post text from data.")
 
          # 2. Post Potential Score & Reason
-         llm_response = analyze_post_potential(ai_client, post_text)
+         llm_response = analyze_post_potential(client=ai_client, post_text=post_text, model="gemini-2.0-flash-lite")
          try:
             post_score = int(llm_response.get('score', 0))
             advice = llm_response.get('reason', 'No specific advice provided by LLM.')
