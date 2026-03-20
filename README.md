@@ -15,12 +15,28 @@ The system supports two primary modes of operation:
 
 ## 🛠️ Tech Stack
 
-- **Backend:** FastAPI, Python, Pydantic, Uvicorn
-- **AI & ML:** - LLM Integration (AihubmixClient / GPT models)
-  - HuggingFace Transformers (`nlptown/bert-base-multilingual-uncased-sentiment`)
+- **Backend:**
+  - Python, Pydantic, FastAPI, Uvicorn
+- **AI & ML:**
+  - AIHubMix
+  - HuggingFace Transformers
   - SentenceTransformers (`all-MiniLM-L6-v2`)
-- **Data Scraping & Processing:** Selenium, BeautifulSoup4, Pandas, NumPy
-- **Frontend:** Vanilla HTML, CSS, JavaScript (Fetch API)
+- **Data Scraping & Processing:**
+  - Selenium, BeautifulSoup4, Pandas, NumPy
+- **Frontend:**
+  - Vanilla HTML, CSS, JavaScript (Fetch API)
+
+## 💡 Engineering Highlights
+
+This project is built with production-readiness and scalability in mind, incorporating several software engineering best practices:
+
+* **Non-Blocking Asynchronous Architecture:** Data scraping with Selenium is inherently a synchronous, I/O-blocking operation. To prevent this from freezing the FastAPI ASGI event loop, the scraper is encapsulated and dispatched to a separate thread using `run_in_threadpool`. This ensures the API remains highly responsive and capable of handling concurrent requests.
+* **Smart Memory Management & Custom LRU Cache:** Loading large HuggingFace Transformer models for sentiment analysis can quickly lead to Out-Of-Memory (OOM) errors. The `CommentAnalyzer` implements a custom LRU-style (Least Recently Used) caching mechanism with a strict memory limit. When the cache is full, it automatically evicts the oldest model and forces garbage collection (`gc.collect()`) to safely free up RAM/VRAM.
+* **Model Agnosticism & Flexibility:** The system is designed to avoid vendor lock-in. Both the LLM for `Post Potential` and the NLP pipeline for `Comment Sentiment` accept dynamic `model` parameters. You can easily hot-swap the default `gpt-4.1-free` or `nlptown/bert-base...` models for domain-specific fine-tuned alternatives without altering the core logic.
+* **Secure Configuration Management:** Sensitive credentials, such as LLM API keys, are strictly decoupled from the codebase. They are securely loaded via `.env` files using a dedicated `config.py` module, preventing accidental leaks of hardcoded secrets into version control.
+* **Safe Resource Teardown (Context Managers):** The Selenium-based `DataExtractor` is implemented as a Python Context Manager (`__enter__` and `__exit__` magic methods). This guarantees that the browser driver safely quits and cleans up background processes, even if a fatal exception occurs during the scraping phase, preventing zombie Chrome processes from consuming server resources.
+* **Hybrid Scoring Engine:** The ICP (Ideal Customer Profile) Scorer doesn't rely blindly on AI. It uses a robust hybrid approach: combining a deterministic **Rule-Based Engine** (scoring by followers, likes, and account type) with a **Semantic Vector Engine** (using SentenceTransformers to calculate cosine similarity between user professional traits and the reference ICP). This makes the final score both intelligent and highly explainable. 
+* **Resilient DOM Parsing:** The web scraper relies on dynamic explicit waits (`WebDriverWait(driver, 20).until(...)`) rather than static `time.sleep()`. This makes data extraction highly resilient to network latency and fluctuating page load times.
 
 ## 📂 Project Structure
 
