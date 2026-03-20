@@ -1,30 +1,48 @@
-# 🚀 LinkedIn Post Analyzer
+# LinkedIn Post Analyzer
 
 A full-stack AI application designed for growth hackers and B2B marketers. This tool evaluates the virality potential of a LinkedIn post, analyzes the sentiment of the audience, and scores commenters against your Ideal Customer Profile (ICP).
 
 ## ✨ Features
 
-The system supports two primary modes of operation:
-- **Mode 1: Analyze by URL**: Input a LinkedIn post URL and an ICP description. The system will automatically extract the post, comments, and commenters' profiles, then run the multi-dimensional analysis.
-- **Mode 2: Analyze by Files**: Upload your own `post_data.csv` and `comments_data.csv` files along with an ICP description to bypass the scraping phase and directly run the analysis.
+### Dual-Mode Input 📤
 
-### 📊 Three-Dimensional Scoring Engine
-1. **Post Potential Score (1-10):** Evaluates the hook, readability, value, and CTA of the post's text using an LLM. Includes actionable advice for improvement.
-2. **Comment Sentiment Score (1-10):** A batch sentiment analysis pipeline powered by a local BERT model to gauge the overall audience reaction.
-3. **ICP Match Score (1-10):** A hybrid scoring engine combining rule-based heuristics (followers, likes, account type) and semantic vector similarity (SentenceTransformers) to determine how well the commenters match your target audience.
+- #### *via URL*
+
+  Input the `URL` of a LinkedIn post and an `ICP description`. The system will automatically extract the post, comments, and commenters' profiles, then run a multi-dimensional analysis.
+  
+- #### *via CSV*
+
+  Upload your own `post_data.csv` and `comments_data.csv` files along with an `ICP description` to bypass the scraping phase and directly run the analysis.
+
+### Three-Dimensional Scoring Engine 💯
+
+- #### *Post Potential Score* <kbd>1-10</kbd>
+   Evaluates the hook, readability, value, and CTA of the post's text using an LLM. Includes actionable advice for improvement.
+   
+- #### *Comment Sentiment Score* <kbd>1-10</kbd>
+   A batch sentiment analysis pipeline powered by a local BERT model to gauge the overall audience reaction.
+   
+- #### *ICP Match Score* <kbd>1-10</kbd>
+   A hybrid scoring engine combining rule-based heuristics (followers, likes, account type) and semantic vector similarity (SentenceTransformers) to determine how well the commenters match your target audience.
 
 ## 🛠️ Tech Stack
 
 - **Backend:**
-  - Python, Pydantic, FastAPI, Uvicorn
-- **AI & ML:**
+  - Python
+  - Pydantic
+  - FastAPI
+  - Uvicorn
+- **AI & NLP:**
   - AIHubMix
   - HuggingFace Transformers
-  - SentenceTransformers (`all-MiniLM-L6-v2`)
-- **Data Scraping & Processing:**
-  - Selenium, BeautifulSoup4, Pandas, NumPy
+  - SentenceTransformers
+- **Data Scraping:**
+  - Selenium
+  - BeautifulSoup4
 - **Frontend:**
-  - Vanilla HTML, CSS, JavaScript (Fetch API)
+  - Vanilla HTML
+  - CSS
+  - JavaScript
 
 ## 💡 Engineering Highlights
 
