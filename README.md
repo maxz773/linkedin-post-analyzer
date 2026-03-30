@@ -59,7 +59,7 @@ This project is built with production-readiness and scalability in mind, incorpo
   To ensure system stability, a strict capacity limit automatically evicts the oldest models and triggers `gc.collect()`, preventing Out-Of-Memory (OOM) errors even under heavy workloads.
 
 * ***Secure Config Management:*** \
-  Uses `.env` files and a dedicated `config.py` module to manage sensitive credentials. This ensures API keys are decoupled from the codebase and never committed to version control.
+  Leverages **Docker Secrets** for file-based credential injection at `/run/secrets/`, managed via a dedicated `config.py` module. This ensures API keys are decoupled from the codebase and shielded from environment variable leakage.
 
 * ***Safe Resource Lifecycle:*** \
   Implements the `DataExtractor` as a Python Context Manager (`__enter__`/`__exit__`). This guarantees that Selenium browser instances are always terminated and system resources are cleaned up, even if an exception occurs.
