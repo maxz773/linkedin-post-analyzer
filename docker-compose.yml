@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  # --- Backend FastAPI Service ---
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: linkmetrics_backend
+    shm_size: '2gb' # Ensure Chromium gets enough memory to render
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist scraped data by mounting the host directory to the container.
+      # This prevents CSV data loss when the container is recreated or updated.
+      - ./backend/data:/app/backend/data
+    environment:
+      - AIHUBMIX_API_KEY=${AIHUBMIX_API_KEY}
+    restart: unless-stopped
+
+  # --- Frontend Static Content Service (Nginx) ---
+  frontend:
+    image: nginx:alpine
+    container_name: linkmetrics_frontend
+    ports:
+      - "80:80"  # Maps standard HTTP port from host to container
+    volumes:
+      # Bind mount the local frontend directory to Nginx's web root.
+      # ":ro" ensures the container has read-only access to your source code.
+      - ./frontend:/usr/share/nginx/html:ro
+    restart: unless-stopped
