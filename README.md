@@ -31,11 +31,11 @@ To safely handle complex system-level dependencies (like Chromium for Selenium) 
 
 ## 🚀 Quick Start
 
-1. Create a `secrets` directory and securely inject your API key:
+1. Create a `secrets` directory and securely inject your AIHubMix API key:
 
      ```bash
      mkdir secrets
-     echo "your_real_api_key_here" > backend/secrets/ai_api_key.txt
+     echo "your_real_api_key_here" > backend/secrets/aihubmix_api_key.txt
      ```
 3. Launch the system:
 
