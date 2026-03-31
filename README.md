@@ -91,24 +91,34 @@ This project is built with production-readiness and scalability in mind, incorpo
 ## 📂 Project Structure
 
 ```text
-linkmetrics/
-├── backend/
-│   ├── main.py                 # FastAPI application and routing
+linkedin-post-analyzer/
+├── backend/                    # FastAPI Backend Application
+│   ├── main.py                 # API entry point & routing logic
 │   ├── schemas.py              # Pydantic models for request/response validation
-│   ├── config.py               # Configuration and API key management
+│   ├── config.py               # Configuration & API key management
 │   ├── llm_interface/          # LLM client wrappers
-│   ├── services/
-│   │   ├── data_extractor.py   # Selenium & BS4 scraper
-│   │   ├── analyze_post.py     # LLM evaluation prompt and logic
-│   │   ├── comment_analyzer.py # BERT-based sentiment analysis with LRU caching
-│   │   └── ICP_scorer.py       # Rule-based + Semantic vector ICP matching
-│   └── data/                   # Directory for storing generated CSV files
-├── frontend/
-│   ├── index.html              # Clean, minimalist UI
+│   │   └── aihubmix_client.py  # Aihubmix API integration
+│   ├── services/               # Core business logic services
+│   │   ├── data_extractor.py   # Selenium-based LinkedIn scraper
+│   │   ├── analyze_post.py     # LLM post evaluation logic
+│   │   ├── comment_analyzer.py # BERT sentiment analysis pipeline
+│   │   └── ICP_scorer.py       # Semantic vector ICP matching
+│   ├── utils/                  # Helper utilities
+│   │   └── load_data.py        # Data loading and processing helpers
+│   └── tests/                  # Service and interface test suites
+├── frontend/                   # Web Front-end (Single Page App)
+│   ├── index.html              # Clean UI layout
 │   ├── style.css               # Vanilla CSS styling
-│   └── app.js                  # Frontend logic and API integration
-└── README.md
+│   └── app.js                  # API integration & reactive UI logic
+├── secrets/                    # Directory for Docker Secrets (Git ignored)
+│   └── ai_api_key.txt          # Sensitive API credentials (User-created)
+├── Dockerfile                  # Production-ready backend container definition
+├── docker-compose.yml          # Multi-container orchestration (Backend + Frontend)
+├── pyproject.toml              # Project metadata & Python dependencies
+├── uv.lock                     # Deterministic dependency lock file
+└── README.md                   # Project documentation
 ```
+
 ## ⚠️ Disclaimer
 
 > [!IMPORTANT]
